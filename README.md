@@ -89,6 +89,44 @@ def lambda_handler(event, context):
         return f"The EC2 instance {instance_id} is not running. Current state: {instance_state}"
 ```
 
+# Assign the Lamnda function an IAM role
+
+Permissions that are needed by the Lambda function. Update the AWS account ID and the Zone ID.
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "arn:aws:logs:ap-east-1:ACCOUNT-ID:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:ap-east-1:ACCOUNT-ID:log-group:/aws/lambda/get-instance-IP-assign-dynamic-DNS:*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "route53:ChangeResourceRecordSets",
+            "Resource": "arn:aws:route53:::hostedzone/ZONE-ID"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "ec2:DescribeInstances",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+
 
 # Create the EventBridge event
 Name: monitor-instances-when-starting
@@ -129,7 +167,9 @@ If everything goes well, you'll see a new/updated A record in your Route53 zone 
 
 You can now use this hostname with remote desktop solutions like NICE DCV to create a persistent shortcut to the instance without paying for an elastic IP address. 
 
-#Example NICE DCV shortcut code. Save as a .dcv file with Notepad.
+# Example NICE DCV shortcut code
+
+Save as a .dcv file with Notepad.
 
 ```
 [version]
